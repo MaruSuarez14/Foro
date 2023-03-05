@@ -19,6 +19,9 @@ public class ReplyService {
     @Autowired
     TopicService topicService;
 
+    @Autowired
+    UserService userService;
+
     public Reply createReply(Long topicId, String content, User user) {
         Reply reply = new Reply();
         reply.setContent(content);
@@ -27,6 +30,7 @@ public class ReplyService {
         reply.setCreatedAt(date);
         reply.setUpdatedAt(date);
         Topic topic = topicService.getTopicById(topicId);
+        topic.setUser(userService.completeUser(topic.getUser()));
         reply.setTopic(topic);
         replyRepo.save(reply);
         reply.set_id(reply.getId());
@@ -39,10 +43,15 @@ public class ReplyService {
 
     @Transactional
     public void updateReply(String content, Long replyId) {
-        replyRepo.updateReply(content, replyId);
+        LocalDateTime date = LocalDateTime.now();
+        replyRepo.updateReply(content, replyId, date);
     }
 
     public Reply getReplyById(Long id){
         return replyRepo.findById(id).get();
+    }
+
+    public void deleteReply(Long replyId) {
+        replyRepo.deleteById(replyId);
     }
 }

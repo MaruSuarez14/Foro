@@ -61,6 +61,13 @@ public class CategoryController {
         return categoryService.getCategoryBySlug(slug);
     }
 
+    @DeleteMapping("categories/{categorySlug}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public Object deleteCategory(@PathVariable String categorySlug) {
+        categoryService.deleteCategory(categorySlug);
+        return true;
+    }
+
 
 
 

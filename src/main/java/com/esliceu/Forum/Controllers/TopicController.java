@@ -6,8 +6,10 @@ import com.esliceu.Forum.Model.Category;
 import com.esliceu.Forum.Model.Reply;
 import com.esliceu.Forum.Model.Topic;
 import com.esliceu.Forum.Model.User;
+import com.esliceu.Forum.Services.CategoryService;
 import com.esliceu.Forum.Services.ReplyService;
 import com.esliceu.Forum.Services.TopicService;
+import com.esliceu.Forum.Services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -23,23 +25,30 @@ import java.util.Map;
 public class TopicController {
     TopicService topicService;
     ReplyService replyService;
+    CategoryService categoryService;
+    UserService userService;
 
 
-    public TopicController(TopicService topicService, ReplyService replyService) {
+    public TopicController(TopicService topicService, ReplyService replyService, CategoryService categoryService,
+                           UserService userService) {
         this.topicService = topicService;
         this.replyService = replyService;
+        this.categoryService = categoryService;
+        this.userService = userService;
     }
 
     @GetMapping("/categories/{slug}/topics")
     @CrossOrigin(origins = "http://localhost:3000")
     public List<Topic> getTopics(@PathVariable String slug, HttpServletResponse response) {
-        List<Topic> topics = topicService.getTopicsByCategory(slug);
-        if(topics!=null) {
-            return topics;
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        Category category = categoryService.getCategoryBySlug(slug);
+        List<Topic> topics = topicService.getTopicsByCategory(category);
+        if(!topics.isEmpty()) {
+            for (Topic t: topics) {
+                t.set_id(t.getId());
+                t.setUser(userService.completeUser(t.getUser()));
+            }
         }
-
+        return topics;
 
     }
 
@@ -47,7 +56,8 @@ public class TopicController {
     @CrossOrigin(origins = "http://localhost:3000")
     public Topic createTopic(@Valid @RequestBody TopicForm body, HttpServletRequest request) {
         User user = (User) request.getAttribute("user");
-        Topic topic = topicService.createTopic(body, user);
+        Category category = categoryService.getCategoryBySlug(body.getCategory());
+        Topic topic = topicService.createTopic(body, user, category);
         if(topic!=null) {
             return topic;
         } else {
@@ -60,6 +70,7 @@ public class TopicController {
     @CrossOrigin(origins = "http://localhost:3000")
     public Map<String, Object> getTopic(@PathVariable Long topicId) {
         Topic topic = topicService.getTopicById(topicId);
+        topic.setUser(userService.completeUser(topic.getUser()));
         Map<String, Object> map = new HashMap<>();
         if(topic!=null){
             map.put("category", topic.getCategory());
@@ -83,7 +94,17 @@ public class TopicController {
     @PutMapping("/topics/{topicId}")
     @CrossOrigin(origins = "http://localhost:3000")
     public Topic updateTopic(@Valid @RequestBody TopicForm body, @PathVariable long topicId) {
-        topicService.update(body.getCategory(), body.getContent(), body.getTitle(), topicId);
-        return topicService.getTopicById(topicId);
+        Category category = categoryService.getCategoryBySlug(body.getCategory());
+        topicService.update(body.getContent(), body.getTitle(), topicId, category);
+        Topic topic = topicService.getTopicById(topicId);
+        topic.setUser(userService.completeUser(topic.getUser()));
+        return topic;
+    }
+
+    @DeleteMapping("topics/{topicId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public Object deleteTopic (@PathVariable Long topicId) {
+        topicService.deleteTopic(topicId);
+        return true;
     }
 }

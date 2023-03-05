@@ -42,4 +42,11 @@ public class ReplyController {
         replyService.updateReply(content, replyId);
         return replyService.getReplyById(replyId);
     }
+
+    @DeleteMapping("topics/{topicId}/replies/{replyId}")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public Object deleteReply(@PathVariable Long replyId) {
+        replyService.deleteReply(replyId);
+        return true;
+    }
 }

@@ -2,6 +2,7 @@ package com.esliceu.Forum.Controllers;
 
 import com.esliceu.Forum.Exceptions.UnauthorizedException;
 import com.esliceu.Forum.Forms.Credentials;
+import com.esliceu.Forum.Forms.SettingsForm;
 import com.esliceu.Forum.Forms.UserForm;
 import com.esliceu.Forum.Model.User;
 import com.esliceu.Forum.Services.CategoryService;
@@ -93,6 +94,18 @@ public class UserController {
             System.out.println(e.getMessage());
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+
+    @PutMapping("/profile")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public Map<String, Object> updateProfile(@Valid @RequestBody SettingsForm body) {
+        Map<String, Object> map = new HashMap<>();
+        userService.update(body.getName(), body.getEmail());
+        User user = userService.getProfile(body.getEmail());
+        String token = tokenService.newToken(user.getEmail());
+        map.put("token", token);
+        map.put("user", user);
+        return map;
     }
 
 }

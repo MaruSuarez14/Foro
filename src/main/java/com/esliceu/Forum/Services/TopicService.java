@@ -9,6 +9,7 @@ import com.esliceu.Forum.Repos.ReplyRepo;
 import com.esliceu.Forum.Repos.TopicRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,31 +21,18 @@ public class TopicService {
     @Autowired
     TopicRepo topicRepo;
 
-    @Autowired
-    CategoryService categoryService;
-
-    @Autowired
-    UserService userService;
 
     @Autowired
     ReplyRepo replyRepo;
 
-    public List<Topic> getTopicsByCategory(String slug) {
-        Category category = categoryService.getCategoryBySlug(slug);
-        List<Topic> topics = topicRepo.findTopicByCategory_id(category.getId());
-        if(!topics.isEmpty()) {
-            for (Topic t: topics) {
-                t.set_id(t.getId());
-                t.setUser(userService.completeUser(t.getUser()));
-            }
-        }
-        return topics;
+
+    public List<Topic> getTopicsByCategory(Category category) {
+        return topicRepo.findTopicByCategory_id(category.getId());
     }
 
-    public Topic createTopic(TopicForm body, User user) {
+    public Topic createTopic(TopicForm body, User user, Category category) {
         Topic topic = new Topic();
         topic.setTitle(body.getTitle());
-        Category category = categoryService.getCategoryBySlug(body.getCategory());
         topic.setCategory(category);
         topic.setContent(body.getContent());
         LocalDateTime date = LocalDateTime.now();
@@ -58,14 +46,22 @@ public class TopicService {
     }
 
     public Topic getTopicById(Long id) {
-        Topic topic = topicRepo.findById(id).get();
-        topic.setUser(userService.completeUser(topic.getUser()));
-        return topic;
+        return topicRepo.findById(id).get();
     }
 
     @Transactional
-    public void update(String categorySlug, String content, String title, long id) {
-        Category category = categoryService.getCategoryBySlug(categorySlug);
-        topicRepo.updateTopic(title, content, category, id);
+    public void update(String content, String title, long id, Category category) {
+        LocalDateTime date = LocalDateTime.now();
+        topicRepo.updateTopic(title, content, category, date, id);
+    }
+
+    public void deleteTopic(Long topicId) {
+        List<Reply> replies = replyRepo.findReplyByTopic_id(topicId);
+        if(!replies.isEmpty()) {
+            for (Reply r : replies) {
+                replyRepo.deleteById(r.getId());
+            }
+        }
+        topicRepo.deleteById(topicId);
     }
 }

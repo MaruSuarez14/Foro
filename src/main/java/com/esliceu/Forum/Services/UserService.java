@@ -5,6 +5,7 @@ import com.esliceu.Forum.Forms.Credentials;
 import com.esliceu.Forum.Model.User;
 import com.esliceu.Forum.Repos.UserRepo;
 import com.esliceu.Forum.Utils.EncodePassword;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,12 @@ public class UserService {
         return userRepo.findByEmail(mail);
     }
 
+    @Transactional
+    public void update (String name, String email) {
+        User user = getProfile(email);
+        userRepo.updateUserProfile(name, email, user.getId());
+    }
+
     public User getProfile(String email) {
         List<User> users = userRepo.findByEmail(email);
         if (users.isEmpty()){
@@ -63,8 +70,8 @@ public class UserService {
 
     public String [] setPermissions(String role) {
         String[] result = {};
-        switch(role) {
-            case "admin":
+        //switch(role) {
+            //case "admin":
                 result = new String[]{
                         "own_topics:write",
                         "own_topics:delete",
@@ -73,8 +80,8 @@ public class UserService {
                         "categories:write",
                         "categories:delete"
                 };
-                break;
-        }
+               // break;
+        //}
         return result;
     }
 

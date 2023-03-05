@@ -2,6 +2,7 @@ package com.esliceu.Forum.Services;
 
 import com.esliceu.Forum.Forms.CategoryForm;
 import com.esliceu.Forum.Model.Category;
+import com.esliceu.Forum.Model.Topic;
 import com.esliceu.Forum.Repos.CategoryRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,10 @@ import java.util.Random;
 public class CategoryService {
     @Autowired
     CategoryRepo categoryRepo;
+
+    @Autowired
+    TopicService topicService;
+
 
     public List<Category> getAllCategories() {
         return categoryRepo.findAll();
@@ -62,5 +67,16 @@ public class CategoryService {
     @Transactional
     public void update (String title, String description, long id) {
         categoryRepo.updateCategory(title, description, id);
+    }
+
+    public void deleteCategory(String categorySlug) {
+        Category category = getCategoryBySlug(categorySlug);
+        List<Topic> topics = topicService.getTopicsByCategory(category);
+        if(!topics.isEmpty()){
+            for (Topic t: topics) {
+                topicService.deleteTopic(t.getId());
+            }
+        }
+        categoryRepo.deleteById(category.getId());
     }
 }
