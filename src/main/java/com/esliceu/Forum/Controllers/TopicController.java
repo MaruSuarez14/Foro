@@ -69,10 +69,12 @@ public class TopicController {
     @GetMapping("/topics/{topicId}")
     @CrossOrigin(origins = "http://localhost:3000")
     public Map<String, Object> getTopic(@PathVariable Long topicId) {
-        Topic topic = topicService.getTopicById(topicId);
-        topic.setUser(userService.completeUser(topic.getUser()));
         Map<String, Object> map = new HashMap<>();
+        Topic topic = topicService.getTopicById(topicId);
         if(topic!=null){
+        topicService.addReplyCount(topic);
+        topic = topicService.addView(topic);
+        topic.setUser(userService.completeUser(topic.getUser()));
             map.put("category", topic.getCategory());
             map.put("content", topic.getContent());
             map.put("id", topic.getId());

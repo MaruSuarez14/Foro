@@ -45,6 +45,19 @@ public class TopicService {
         return topic;
     }
 
+    @Transactional
+    public Topic addView(Topic topic){
+        int views = topic.getViews() + 1;
+        topicRepo.updateViews(views,topic.getId());
+        return getTopicById(topic.getId());
+    }
+
+    @Transactional
+    public void addReplyCount(Topic topic){
+        int replyCount = replyRepo.countReplies(topic);
+        topicRepo.updateReplies(replyCount,topic.getId());
+    }
+
     public Topic getTopicById(Long id) {
         return topicRepo.findById(id).get();
     }

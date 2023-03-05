@@ -15,4 +15,12 @@ public interface TopicRepo extends JpaRepository<Topic, Long> {
     @Modifying
     @Query("update Topic set title = :title, content = :content, category = :category, updatedAt = :date where topic_id = :id")
     void updateTopic(String title, String content, Category category, LocalDateTime date, long id);
+
+    @Modifying
+    @Query("update Topic set views = :views where topic_id = :id")
+    void updateViews(int views, long id);
+
+    @Modifying
+    @Query("update Topic set numberOfReplies = :reply where topic_id = :id")
+    void updateReplies(int reply, long id);
 }

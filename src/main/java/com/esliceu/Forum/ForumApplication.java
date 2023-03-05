@@ -22,7 +22,8 @@ public class ForumApplication implements WebMvcConfigurer {
 		registry.addInterceptor(tokenInterceptor)
 				.addPathPatterns("/getprofile")
 				.addPathPatterns("/topics")
-				.addPathPatterns("/topics/{topicId}/replies");
+				.addPathPatterns("/topics/{topicId}/replies")
+				.addPathPatterns("/profile/password");
 
 	}
 

@@ -38,7 +38,11 @@ public class ReplyService {
     }
 
     public List<Reply> getReplyByTopic(Topic topic){
-        return replyRepo.findReplyByTopic_id(topic.getId());
+        List <Reply> replies = replyRepo.findReplyByTopic_id(topic.getId());
+        for (Reply r: replies) {
+            r.set_id(r.getId());
+        }
+        return replies;
     }
 
     @Transactional

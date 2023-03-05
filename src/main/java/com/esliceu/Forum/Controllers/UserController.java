@@ -1,7 +1,9 @@
 package com.esliceu.Forum.Controllers;
 
+import com.esliceu.Forum.Exceptions.PasswordException;
 import com.esliceu.Forum.Exceptions.UnauthorizedException;
 import com.esliceu.Forum.Forms.Credentials;
+import com.esliceu.Forum.Forms.PasswordForm;
 import com.esliceu.Forum.Forms.SettingsForm;
 import com.esliceu.Forum.Forms.UserForm;
 import com.esliceu.Forum.Model.User;
@@ -100,12 +102,33 @@ public class UserController {
     @CrossOrigin(origins = "http://localhost:3000")
     public Map<String, Object> updateProfile(@Valid @RequestBody SettingsForm body) {
         Map<String, Object> map = new HashMap<>();
-        userService.update(body.getName(), body.getEmail());
-        User user = userService.getProfile(body.getEmail());
+        User user = userService.updateProfile(body.getName(), body.getEmail());
         String token = tokenService.newToken(user.getEmail());
         map.put("token", token);
         map.put("user", user);
         return map;
     }
+
+    @PutMapping("/profile/password")
+    @CrossOrigin(origins = "http://localhost:3000")
+    public Object updatePassword(@Valid @RequestBody PasswordForm body, HttpServletRequest request, HttpServletResponse
+            response) {
+        Map<String, String> map = new HashMap<>();
+        User user = (User) request.getAttribute("user");
+        try {
+            boolean result = userService.updatePassword(body.getCurrentPassword(), body.getNewPassword(), user);
+            if(result) {
+                response.setStatus(200);
+                return true;
+            }
+        } catch (PasswordException p) {
+            response.setStatus(p.getStatusCode());
+            map.put("message", p.getMessage());
+            return map;
+
+        }
+        return false;
+    }
+
 
 }

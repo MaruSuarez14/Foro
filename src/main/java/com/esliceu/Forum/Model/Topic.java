@@ -21,6 +21,7 @@ public class Topic {
 
     Long _id;
 
+    @Column(name = "number_of_replies")
     int numberOfReplies;
 
     @ManyToOne

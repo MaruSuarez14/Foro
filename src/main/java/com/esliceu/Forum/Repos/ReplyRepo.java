@@ -1,6 +1,7 @@
 package com.esliceu.Forum.Repos;
 
 import com.esliceu.Forum.Model.Reply;
+import com.esliceu.Forum.Model.Topic;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +15,7 @@ public interface ReplyRepo extends JpaRepository<Reply, Long> {
     @Modifying
     @Query("update Reply set content = :content, updatedAt = :date where reply_id = :id")
     void updateReply(String content, Long id, LocalDateTime date);
+
+    @Query("SELECT COUNT(*) FROM Reply WHERE topic = :topic")
+    int countReplies(Topic topic);
 }
